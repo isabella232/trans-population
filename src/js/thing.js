@@ -49,8 +49,6 @@ function formatData(data) {
 
 	data = us.concat(rest);
 
-	console.log(data);
-
 	data.forEach(function(d) {
 		d['pct'] = parseFloat(d['pct'].replace('%', ''));
 		d['pct_lower'] = parseFloat(d['pct_lower'].replace('%', ''));

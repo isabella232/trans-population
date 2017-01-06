@@ -1,3 +1,9 @@
+// Match Atlas
+.item-body h3
+    font-family $qz-sans
+    font-size 20px
+    font-weight 400
+
 #graphic
     position relative
 
@@ -15,7 +21,8 @@ ul.labels
         -webkit-font-smoothing antialiased
 
         span
-            font-family $qz-sans
+            font-family $qz-sans-light
+            color $qz-gray-3
             display table-cell
             vertical-align middle
 
@@ -24,14 +31,14 @@ ul.labels
 
 .intervals
     .lower, .upper
-        fill $qz-gray-2
+        fill $qz-gray-3
 
     .point
         fill $qz-purp-3
 
     line
         fill none
-        stroke $qz-gray-2
+        stroke $qz-gray-3
         stroke-width 1px
         shape-rendering crispEdges
 
@@ -41,7 +48,7 @@ ul.labels
         font-size 0.8em
 
         &.lower-label, &.upper-label
-            fill $qz-gray-2
+            fill $qz-gray-3
 
     .united-states
         font-weight bold
@@ -52,7 +59,7 @@ ul.labels
     font-size 0.8em
 
     &.lower, &.upper
-        fill $qz-gray-2
+        fill $qz-gray-3
 
 .footer
     font-family $qz-sans
@@ -61,11 +68,11 @@ ul.labels
     font-size 0.8em
 
     .source
-        width 50%
+        width 75%
         float left
         text-align left
 
     .brand
-        width 50%
+        width 25%
         float left
         text-align right
