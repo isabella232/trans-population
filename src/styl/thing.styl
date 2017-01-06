@@ -1,57 +1,5 @@
-// Interactive-specific css here
-
-// .graphic
-//     position relative
-//     margin-bottom 11px
-//     // .clearfix()
-//
-//     img
-//         max-width 100%
-//         height auto
-//
-
-
-//
-// .axis {
-//     font-size: 11px;
-//     -webkit-font-smoothing: antialiased;
-//     fill: #999;
-//
-//     path,
-//     line {
-//         fill: none;
-//         stroke: #ccc;
-//         shape-rendering: crispEdges;
-//     }
-//
-//     &.y {
-//         path { display: none; }
-//         .tick line { display: none; }
-//     }
-// }
-//
-// .grid {
-//     path { display: none; }
-//
-//     .tick {
-//         stroke: #eee;
-//         stroke-width: 1px;
-//         shape-rendering: crispEdges;
-//     }
-//
-//     &.y {
-//         g:first-child line { display: none; }
-//     }
-// }
-
 #graphic
     position relative
-
-line, rect
-    shape-rendering: crispEdges
-
-.bars rect
-    fill $qz-purp-3
 
 ul.labels
     position absolute
@@ -63,9 +11,6 @@ ul.labels
     li
         position absolute
         text-align right
-        // font-size 12px
-        // line-height 1.3
-        // color #666
         display table
         -webkit-font-smoothing antialiased
 
@@ -73,6 +18,35 @@ ul.labels
             display table-cell
             vertical-align middle
 
-.value text
-    &.in
-        fill #fff
+        &.united-states
+            font-weight bold
+
+.intervals
+    .lower, .upper
+        fill $qz-gray-2
+
+    .point
+        fill $qz-purp-3
+
+    line
+        fill none
+        stroke $qz-gray-2
+        stroke-width 1px
+        shape-rendering crispEdges
+
+    text
+        fill $qz-purp-3
+        font-size 0.8em
+
+        &.lower-label, &.upper-label
+            fill $qz-gray-2
+
+    .united-states
+        font-weight bold
+
+.annotations text
+    fill $qz-purp-3
+    font-size 0.8em
+
+    &.lower, &.upper
+        fill $qz-gray-2

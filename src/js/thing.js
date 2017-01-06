@@ -34,6 +34,8 @@ function init() {
 function formatData(data) {
 	data.forEach(function(d) {
 		d['pct'] = parseFloat(d['pct'].replace('%', ''));
+		d['pct_lower'] = parseFloat(d['pct_lower'].replace('%', ''));
+		d['pct_upper'] = parseFloat(d['pct_upper'].replace('%', ''));
 	});
 
 	return data;
@@ -80,13 +82,15 @@ var renderBarChart = function(config) {
 
 	var barHeight = 30;
 	var barGap = 5;
-	var labelWidth = 250;
+	var labelWidth = isMobile? 120 : 150;
 	var labelMargin = 6;
 	var valueGap = 6;
+	var intervalHeight = 3;
+	var annotationsGap = 10;
 
 	var margins = {
-		top: 10,
-		right: 15,
+		top: 30,
+		right: 25,
 		bottom: 30,
 		left: (labelWidth + labelMargin)
 	};
@@ -117,20 +121,8 @@ var renderBarChart = function(config) {
 	/*
 	 * Create D3 scale objects.
 	 */
-	var min = d3.min(config['data'], function(d) {
-		return Math.floor(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
-	});
-
-	if (min > 0) {
-		min = 0;
-	}
-
-	var max = d3.max(config['data'], function(d) {
-		return Math.ceil(d[valueColumn] / roundTicksFactor) * roundTicksFactor;
-	})
-
 	var xScale = d3.scale.linear()
-		.domain([min, max])
+		.domain([0, 1.5])
 		.range([0, chartWidth]);
 
 	/*
@@ -142,7 +134,11 @@ var renderBarChart = function(config) {
 		.ticks(ticksX)
 		.tickSize(-chartHeight, 0)
 		.tickFormat(function(d) {
-			return d.toFixed(0) + '%';
+			if (d == 0) {
+				return '0%'
+			}
+
+			return d.toFixed(1) + '%';
 		});
 
 	/*
@@ -154,61 +150,112 @@ var renderBarChart = function(config) {
 		.call(xAxis);
 
 	/*
-	 * Render grid to chart.
-	 */
-	// var xAxisGrid = function() {
-	// 	return xAxis;
-	// };
-	//
-	// chartElement.append('g')
-	// 	.attr('class', 'x grid')
-	// 	.attr('transform', makeTranslate(0, chartHeight))
-	// 	.call(xAxisGrid()
-	// 		.tickSize(-chartHeight, 0)
-	// 		.tickFormat('')
-	// 	);
-
-	/*
-	 * Render bars to chart.
+	 * Render intervals to chart.
 	 */
 	chartElement.append('g')
-		.attr('class', 'bars')
-		.selectAll('rect')
+		.attr('class', 'intervals')
+		.selectAll('g')
 		.data(config['data'])
-		.enter()
-		.append('rect')
-			.attr('x', function(d) {
-				if (d[valueColumn] >= 0) {
-					return xScale(0);
-				}
+		.enter().append('g')
+			.attr('class', function(d) {
+				return classify(d['state']);
+			})
+			.each(function(d, i) {
+				var r = 3;
+				var y = (i * (barHeight + barGap)) + barHeight / 2
+				var lower_x = xScale(d['pct_lower']);
+				var upper_x = xScale(d['pct_upper']);
+				var point_x = xScale(d['pct']);
 
-				return xScale(d[valueColumn]);
-			})
-			.attr('width', function(d) {
-				return Math.abs(xScale(0) - xScale(d[valueColumn]));
-			})
-			.attr('y', function(d, i) {
-				return i * (barHeight + barGap);
-			})
-			.attr('height', barHeight)
-			.attr('class', function(d, i) {
-				return 'bar-' + i + ' ' + classify(d[labelColumn]);
+				d3.select(this).append('line')
+					.attr('x1', lower_x)
+					.attr('x2', upper_x)
+					.attr('y1', y)
+					.attr('y2', y)
+
+				d3.select(this).append('line')
+					.attr('class', 'lower')
+					.attr('x1', lower_x)
+					.attr('x2', lower_x)
+					.attr('y1', y - intervalHeight)
+					.attr('y2', y + intervalHeight);
+
+				d3.select(this).append('line')
+					.attr('class', 'upper')
+					.attr('x1', upper_x)
+					.attr('x2', upper_x)
+					.attr('y1', y - intervalHeight)
+					.attr('y2', y + intervalHeight);
+
+				d3.select(this).append('circle')
+					.attr('class', 'point')
+					.attr('r', r)
+					.attr('cx', point_x)
+					.attr('cy', y);
+
+				d3.select(this).append('text')
+					.attr('class', 'point-label')
+					.attr('x', point_x)
+					.attr('y', y - 6)
+					.attr('style', formatStyle({
+						'text-anchor': 'middle'
+					}))
+					.text(d['pct'].toFixed(2) + '%');
+
+				if (d['state'] == 'United States') {
+					d3.select(this).append('text')
+						.attr('class', 'lower-label')
+						.attr('x', lower_x - valueGap)
+						.attr('y', y)
+						.attr('style', formatStyle({
+							'text-anchor': 'end',
+							'alignment-baseline': 'middle'
+						}))
+						.text(d['pct_lower'].toFixed(2) + '%');
+
+					d3.select(this).append('text')
+						.attr('class', 'upper-label')
+						.attr('x', upper_x + valueGap)
+						.attr('y', y)
+						.attr('style', formatStyle({
+							'alignment-baseline': 'middle'
+						}))
+						.text(d['pct_upper'].toFixed(2) + '%');
+				}
 			});
 
-	/*
-	 * Render 0-line.
-	 */
-	if (min < 0) {
-		chartElement.append('line')
-			.attr('class', 'zero')
-			.attr('x1', xScale(0))
-			.attr('x2', xScale(0))
-			.attr('y1', 0)
-			.attr('y2', chartHeight);
-	}
+	var annotations = chartElement.append('g')
+		.attr('class', 'annotations');
+
+	annotations.append('text')
+		.attr('class', 'lower')
+		.attr('x', xScale(config['data'][0]['pct_lower']))
+		.attr('y', -annotationsGap)
+		.attr('style', formatStyle({
+			'text-anchor': 'end'
+		}))
+		.html('At least')
+
+	annotations.append('text')
+		.attr('class', 'upper')
+		.attr('x', xScale(config['data'][0]['pct_upper']))
+		.attr('y', -annotationsGap)
+		.attr('style', formatStyle({
+			'text-anchor': 'start'
+		}))
+		.html('At most')
+
+	annotations.append('text')
+		.attr('class', 'point')
+		.attr('x', xScale(config['data'][0]['pct']))
+		.attr('y', -annotationsGap)
+		.attr('style', formatStyle({
+			'text-anchor': 'middle'
+		}))
+		.html('Estimate')
 
 	/*
-	 * Render bar labels.
+	 * Render labels.
 	 */
 	chartWrapper.append('ul')
 		.attr('class', 'labels')
@@ -236,64 +283,18 @@ var renderBarChart = function(config) {
 				.text(function(d) {
 					return d[labelColumn];
 				});
-
-	/*
-	 * Render bar values.
-	 */
-	chartElement.append('g')
-		.attr('class', 'value')
-		.selectAll('text')
-		.data(config['data'])
-		.enter()
-		.append('text')
-			.text(function(d) {
-				return d[valueColumn].toFixed(0) + '%';
-			})
-			.attr('x', function(d) {
-				return xScale(d[valueColumn]);
-			})
-			.attr('y', function(d, i) {
-				return i * (barHeight + barGap);
-			})
-			.attr('dx', function(d) {
-				var xStart = xScale(d[valueColumn]);
-				var textWidth = this.getComputedTextLength()
-
-				// Negative case
-				if (d[valueColumn] < 0) {
-					var outsideOffset = -(valueGap + textWidth);
-
-					if (xStart + outsideOffset < 0) {
-						d3.select(this).classed('in', true)
-						return valueGap;
-					} else {
-						d3.select(this).classed('out', true)
-						return outsideOffset;
-					}
-				// Positive case
-				} else {
-					if (xStart + valueGap + textWidth > chartWidth) {
-						d3.select(this).classed('in', true)
-						return -(valueGap + textWidth);
-					} else {
-						d3.select(this).classed('out', true)
-						return valueGap;
-					}
-				}
-			})
-			.attr('dy', (barHeight / 2) + 3)
 }
 
 /*
  * Create a SVG tansform for a given translation.
  */
 var makeTranslate = function(x, y) {
-    var transform = d3.transform();
+	var transform = d3.transform();
 
-    transform.translate[0] = x;
-    transform.translate[1] = y;
+	transform.translate[0] = x;
+	transform.translate[1] = y;
 
-    return transform.toString();
+	return transform.toString();
 }
 
 /*
@@ -304,25 +305,25 @@ var makeTranslate = function(x, y) {
  * function defined in base_filters.py.
  */
 var classify = function(str) {
-    return str.toLowerCase()
-        .replace(/\s+/g, '-')           // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-        .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-        .replace(/^-+/, '')             // Trim - from start of text
-        .replace(/-+$/, '');            // Trim - from end of text
+	return str.toLowerCase()
+		.replace(/\s+/g, '-')           // Replace spaces with -
+		.replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+		.replace(/\-\-+/g, '-')         // Replace multiple - with single -
+		.replace(/^-+/, '')             // Trim - from start of text
+		.replace(/-+$/, '');            // Trim - from end of text
 }
 
 /*
  * Convert key/value pairs to a style string.
  */
 var formatStyle = function(props) {
-    var s = '';
+	var s = '';
 
-    for (var key in props) {
-        s += key + ': ' + props[key].toString() + '; ';
-    }
+	for (var key in props) {
+		s += key + ': ' + props[key].toString() + '; ';
+	}
 
-    return s;
+	return s;
 }
 
 // Bind on-load handler
