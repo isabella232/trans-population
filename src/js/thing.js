@@ -32,6 +32,25 @@ function init() {
  * Format data or generate any derived variables.
  */
 function formatData(data) {
+	var us = [data[0]];
+	var rest = data.slice(1);
+
+	rest.sort(function(a, b) {
+		if (a['pct'] > b['pct']) {
+			return -1;
+		}
+
+	    if (a['pct'] < b['pct']) {
+			return 1;
+		}
+
+		return 0;
+	})
+
+	data = us.concat(rest);
+
+	console.log(data);
+
 	data.forEach(function(d) {
 		d['pct'] = parseFloat(d['pct'].replace('%', ''));
 		d['pct_lower'] = parseFloat(d['pct_lower'].replace('%', ''));
@@ -85,8 +104,7 @@ var renderBarChart = function(config) {
 	var labelWidth = isMobile? 120 : 150;
 	var labelMargin = 6;
 	var valueGap = 6;
-	var intervalHeight = 3;
-	var annotationsGap = 10;
+	var intervalHeight = 4;
 
 	var margins = {
 		top: 30,
@@ -230,7 +248,7 @@ var renderBarChart = function(config) {
 	annotations.append('text')
 		.attr('class', 'lower')
 		.attr('x', xScale(config['data'][0]['pct_lower']))
-		.attr('y', -annotationsGap)
+		.attr('y', -6)
 		.attr('style', formatStyle({
 			'text-anchor': 'end'
 		}))
@@ -239,7 +257,7 @@ var renderBarChart = function(config) {
 	annotations.append('text')
 		.attr('class', 'upper')
 		.attr('x', xScale(config['data'][0]['pct_upper']))
-		.attr('y', -annotationsGap)
+		.attr('y', -6)
 		.attr('style', formatStyle({
 			'text-anchor': 'start'
 		}))
@@ -248,7 +266,7 @@ var renderBarChart = function(config) {
 	annotations.append('text')
 		.attr('class', 'point')
 		.attr('x', xScale(config['data'][0]['pct']))
-		.attr('y', -annotationsGap)
+		.attr('y', -6)
 		.attr('style', formatStyle({
 			'text-anchor': 'middle'
 		}))

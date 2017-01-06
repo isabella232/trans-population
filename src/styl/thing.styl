@@ -15,6 +15,7 @@ ul.labels
         -webkit-font-smoothing antialiased
 
         span
+            font-family $qz-sans
             display table-cell
             vertical-align middle
 
@@ -35,6 +36,7 @@ ul.labels
         shape-rendering crispEdges
 
     text
+        font-family $qz-sans
         fill $qz-purp-3
         font-size 0.8em
 
@@ -45,8 +47,25 @@ ul.labels
         font-weight bold
 
 .annotations text
+    font-family $qz-sans
     fill $qz-purp-3
     font-size 0.8em
 
     &.lower, &.upper
         fill $qz-gray-2
+
+.footer
+    font-family $qz-sans
+    color $qz-gray-2
+    width 100%
+    font-size 0.8em
+
+    .source
+        width 50%
+        float left
+        text-align left
+
+    .brand
+        width 50%
+        float left
+        text-align right
