@@ -1,8 +1,17 @@
 // Match Atlas
-.item-body h3
-    font-family $qz-sans
-    font-size 20px
-    font-weight 400
+.item-body
+    h3
+        font-family $qz-sans
+        font-size 20px
+        font-weight 400
+        margin-bottom 5px
+
+    h4
+        font-family $qz-sans
+        font-size 14px
+        font-weight 400
+        color $qz-gray-3
+        margin 0 0 5px 0
 
 #graphic
     position relative
@@ -81,3 +90,11 @@ ul.labels
         width 25%
         float left
         text-align right
+
+p.break
+    line-height 0.1em
+
+@media only screen and (max-width 600px)
+    .item-body
+        h4
+            font-size 12px

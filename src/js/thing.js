@@ -105,7 +105,7 @@ var renderBarChart = function(config) {
 	var intervalHeight = 4;
 
 	var margins = {
-		top: 30,
+		top: 50,
 		right: 25,
 		bottom: 30,
 		left: (labelWidth + labelMargin)
@@ -148,7 +148,7 @@ var renderBarChart = function(config) {
 		.scale(xScale)
 		.orient('bottom')
 		.ticks(ticksX)
-		.tickSize(-chartHeight, 0)
+		.tickSize(-(chartHeight + 30), 0)
 		.tickFormat(function(d) {
 			if (d == 0) {
 				return '0%'
@@ -164,6 +164,24 @@ var renderBarChart = function(config) {
 		.attr('class', 'x axis')
 		.attr('transform', makeTranslate(0, chartHeight))
 		.call(xAxis);
+
+	var xAxisTop = d3.svg.axis()
+		.scale(xScale)
+		.orient('top')
+		.ticks(ticksX)
+		.tickSize(0)
+		.tickFormat(function(d) {
+			if (d == 0) {
+				return '0%'
+			}
+
+			return d.toFixed(1) + '%';
+		});
+
+	chartElement.append('g')
+		.attr('class', 'x axis')
+		.attr('transform', makeTranslate(0, -30))
+		.call(xAxisTop);
 
 	/*
 	 * Render intervals to chart.
